@@ -6,4 +6,5 @@ import './features/register.all';
 import 'monaco-editor-core';
 
 export * from './editor';
+export * from './deltaEdits';
 export { css, html, json, typescript, lsp };
