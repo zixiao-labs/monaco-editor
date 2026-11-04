@@ -28,7 +28,12 @@ export default defineConfig({
 	projects: packagers.flatMap((packager) =>
 		browsers.map((browser) => ({
 			name: `${packager}-${browser.name}`,
-			use: browser.device,
+			use: {
+				...browser.device,
+				...(browser.name === 'chromium' && process.env.MONACO_TEST_CHROMIUM_EXECUTABLE_PATH
+					? { launchOptions: { executablePath: process.env.MONACO_TEST_CHROMIUM_EXECUTABLE_PATH } }
+					: {})
+			},
 			metadata: { packager }
 		}))
 	),

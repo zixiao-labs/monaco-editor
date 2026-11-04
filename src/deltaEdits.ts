@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { editor, IDisposable } from './editor';
+import type { editor, IDisposable } from './editor';
 
 /**
  * Identifies the driver transaction that changed a model. Monaco's native

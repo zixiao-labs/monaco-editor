@@ -34,6 +34,7 @@ async function run() {
 
 		json.private = false;
 		delete json.scripts['postinstall'];
+		delete json.scripts['prepare'];
 
 		packageJSON.contents = Buffer.from(JSON.stringify(json, null, '  '));
 		writeFiles([packageJSON], `out/monaco-editor`);

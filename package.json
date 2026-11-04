@@ -9,7 +9,7 @@
 	"license": "MIT",
 	"scripts": {
 		"import-typescript": "ts-node ./build/importTypescript",
-		"postinstall": "ts-node ./build/postinstall",
+		"dev:hooks": "ts-node ./build/postinstall",
 		"prettier-check": "prettier --check .",
 		"prettier": "prettier --write .",
 		"pretty-quick": "pretty-quick --staged",
@@ -32,9 +32,19 @@
 		"watch": "tsc -w -p ./src",
 		"build-all": "npm run build-lsp && npm run build-monaco-editor && npm run package-for-smoketest",
 		"build": "npm run build-lsp && npm run build-monaco-editor",
+		"build:package": "npm run build && ts-node ./build/prepare-package",
+		"prepare": "npm run build:package",
 		"build-monaco-editor": "ts-node ./build/build-monaco-editor",
 		"build-lsp": "cd monaco-lsp-client && npm install && npm run build"
 	},
+	"files": [
+		"esm",
+		"dev",
+		"min",
+		"monaco.d.ts",
+		"LICENSE.txt",
+		"ThirdPartyNotices.txt"
+	],
 	"typings": "./esm/vs/editor/editor.main.d.ts",
 	"main": "./min/vs/editor/editor.main.js",
 	"module": "./esm/vs/editor/editor.main.js",

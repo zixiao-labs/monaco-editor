@@ -27,6 +27,50 @@ test.describe('Monaco Editor Smoke Tests', () => {
 		expect(monacoType).toBe('object');
 	});
 
+	test('sourced edits preserve provenance, undo isolation and exception cleanup', async ({ page }) => {
+		await page.waitForFunction(() => typeof (window as any).monacoAPI?.SourcedTextModel === 'function');
+		const result = await page.evaluate(() => {
+			const api = (window as any).monacoAPI;
+			const model = api.editor.createModel('a🙂c', 'plaintext');
+			const sourced = new api.SourcedTextModel(model);
+			const sources: (string | undefined)[] = [];
+			sourced.onDidChangeContent((change: any) => sources.push(change.source?.driverId));
+			const remote = { kind: 'remote', driverId: 'peer', deltaIds: ['actor:1'] };
+			const inverse = sourced.applyEdits(remote, [
+				{ range: new api.Range(1, 2, 1, 4), text: 'X' }
+			], true);
+			const projected = model.getValue();
+			model.pushStackElement();
+			model.pushEditOperations([], [{ range: new api.Range(1, 4, 1, 4), text: '!' }], () => []);
+			model.pushStackElement();
+			model.undo();
+			const afterUndo = model.getValue();
+			try {
+				sourced.withSource(remote, () => {
+					sourced.withSource({ kind: 'agent', driverId: 'agent' }, () => model.setValue('nested'));
+					model.setValue('outer');
+					throw new Error('projection failed');
+				});
+			} catch { /* Source stack must unwind through both scopes. */ }
+			model.setValue('local');
+			sourced.dispose();
+			sourced.dispose();
+			const count = sources.length;
+			model.setValue('still owned by caller');
+			const noEventsAfterDispose = sources.length === count;
+			let rejectsDisposed = false;
+			try { sourced.withSource(remote, () => {}); } catch { rejectsDisposed = true; }
+			model.dispose();
+			return { projected, afterUndo, inverse: inverse[0].text,
+				sources: sources.map((source) => source ?? 'local'), noEventsAfterDispose, rejectsDisposed };
+		});
+		expect(result).toEqual({
+			projected: 'aXc', afterUndo: 'aXc', inverse: '🙂',
+			sources: ['peer', 'local', 'local', 'agent', 'peer', 'local'],
+			noEventsAfterDispose: true, rejectsDisposed: true
+		});
+	});
+
 	test('should be able to create plaintext editor', async ({ page }) => {
 		await createEditor(page, 'hello world', 'plaintext');
 

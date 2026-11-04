@@ -6,3 +6,7 @@
 /test/smoke/parcel/.cache/**
 **/dist/
 **/out/
+/esm/
+/dev/
+/min/
+/monaco.d.ts
