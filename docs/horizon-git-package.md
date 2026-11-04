@@ -34,7 +34,16 @@ nested sources, exception cleanup and disposal using a real Monaco text model.
 Building this checkout does **not** update Horizon's installed Git dependency.
 After explicitly publishing this change to the fork, pin Horizon to the new
 commit, approve this fork's dependency build in its `pnpm-workspace.yaml`
-(`allowBuilds.monaco-editor: true`), regenerate the lockfile and reinstall.
+using the exact resolved artifact, regenerate the lockfile and reinstall.
+pnpm 12 does not accept a package-name-only approval for a Git dependency:
+
+```yaml
+allowBuilds:
+  "monaco-editor@https://codeload.github.com/zixiao-labs/monaco-editor/tar.gz/<full-commit>": true
+```
+
+Use the full commit from the package pin, and update this approval when changing
+that pin. Do not use a blanket approval for unrelated artifacts sharing the name.
 Verify the package's JavaScript **and** declaration entry points, not merely a
 Horizon build that does not yet import Monaco. Never replace the Git pin with a
 machine-specific absolute path or commit generated bundles to bypass publishing.
